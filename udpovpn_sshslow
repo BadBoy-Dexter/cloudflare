@@ -1725,6 +1725,7 @@ install_sudo
 install_require  
 install_hysteria
 online
+install_autodns
 installBBR
 install_squid
 install_openvpn
