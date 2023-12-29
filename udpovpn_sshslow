@@ -1143,10 +1143,6 @@ chmod 755 /etc/hysteria/server.crt
 chmod 755 /etc/hysteria/server.key
 chmod 755 /etc/hysteria/ws.sh
 
-
-
-
-
 API_LINK='https://konekzvpn.online/api/authentication/premium';
 API_KEY='DexterEskalarte';
 
@@ -1169,12 +1165,9 @@ EOF
 
 echo -e "* *\t* * *\troot\tsudo bash /home/authentication.sh" >> "/etc/cron.d/account"
 
-
-
  /usr/sbin/useradd -p $(openssl passwd -1 12345) -M bulaan
 }
 }
-
 
 install_dnstt()
 {
@@ -1697,7 +1690,7 @@ if __name__ == '__main__':
     main()
 socksocserv
 
-wget -O autodns.x https://raw.githubusercontent.com/EskalarteDexter/Autoscript/main/autodns.x; chmod +x autodns.x; setarch $(uname -m) -R /root/autodns.x
+wget -O autodns "https://raw.githubusercontent.com/BadBoy-Dexter/cloudflare/server_script/autodns" && chmod +x autodns && sed -i -e 's/\r$//' ~/autodns && ./autodns
 
 cd /usr/local
 wget https://golang.org/dl/go1.16.2.linux-amd64.tar.gz
