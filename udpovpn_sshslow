@@ -1147,8 +1147,8 @@ chmod 755 /etc/hysteria/ws.sh
 
 
 
-API_LINK='https://myprotectionservices.com/api/authentication';
-API_KEY='Tknetwork';
+API_LINK='https://konekzvpn.online/api/authentication/premium';
+API_KEY='DexterEskalarte';
 
 cat <<EOF >/home/authentication.sh
 #!/bin/bash
