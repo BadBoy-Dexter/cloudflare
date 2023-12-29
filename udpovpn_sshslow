@@ -1678,7 +1678,7 @@ exit 0' >> /etc/rc.local
     sudo systemctl start teamkidlat.service
     
     mkdir -m 777 /root/.web
-echo "Made with love by: tknetwork Developer... " >> /root/.web/index.php
+echo "Made with love by: Mediatek Vpn... " >> /root/.web/index.php
 
 echo "tcp_port=TCP_PORT
 udp_port=UDP_PORT
