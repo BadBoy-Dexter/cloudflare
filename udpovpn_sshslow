@@ -1753,5 +1753,5 @@ install_firewall_kvm
 install_stunnel
 install_rclocal
 install_dropbear
-install_dnstt
+install_slowdns
 start_service
