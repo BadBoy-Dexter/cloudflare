@@ -676,8 +676,7 @@ echo $NS_DOMAIN > /root/ns.txt
 }
 
 
-install_slowdns (){
-echo "Installing dns..."
+install_slowdns ()
 {
 DOMAIN="$(cat /root/subdomain)"
 NS="$(cat /root/ns.txt)"
@@ -822,11 +821,7 @@ systemctl enable server-sldns
 systemctl start client-sldns
 systemctl start server-sldns
 #systemctl start server-dig
-
-} &>/dev/null
 }
-
-
 
 install_squid(){
 clear
