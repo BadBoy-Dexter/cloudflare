@@ -1344,13 +1344,8 @@ OPTIONS=""
 PPP_RESTART=0
 RLIMITS=""' >> stunnel4 
 
-echo 'NO_START=0
-DROPBEAR_PORT=442
-DROPBEAR_EXTRA_ARGS=
-DROPBEAR_BANNER="/etc/banner"
-DROPBEAR_RECEIVE_WINDOW=65536' >> dropbear
 
-chmod 755 stunnel4 && chmod 755 dropbear
+chmod 755 stunnel4
 
 echo "/bin/false" >> /etc/shells
 
@@ -1358,7 +1353,6 @@ wget -O /etc/banner "firenetvpn.net/files/repo/banner"
 chmod +x /etc/banner
 
 sudo service stunnel4 restart
-sudo service dropbear restartt
 }
 }
 #install_sudo(){
@@ -1837,5 +1831,5 @@ install_firewall_kvm
 install_stunnel
 install_rclocal
 install_dropbear
-install_dnstt
+install_slowdns 
 start_service
