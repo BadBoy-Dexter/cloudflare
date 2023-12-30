@@ -9,8 +9,8 @@ PORT_UDP='110';
 PORT_SSL='443';
 
 timedatectl set-timezone Asia/Riyadh
-install_require () {
-#{
+install_require () 
+{
 export DEBIAN_FRONTEND=noninteractive
 apt update
 apt install -y curl wget cron python-minimal libpython-stdlib
@@ -102,8 +102,6 @@ echo "Host NS : $NS_DOMAIN"
 echo $NS_DOMAIN > /root/ns.txt
 
 clear
-#}&>/dev/null
-#clear
 }
 
 install_dropbear()
