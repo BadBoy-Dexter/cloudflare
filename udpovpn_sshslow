@@ -26,15 +26,16 @@ clear
 
 install_dropbear()
 {
-clear
 apt-get -y install dropbear
 sed -i 's/NO_START=1/NO_START=0/g' /etc/default/dropbear
 sed -i 's/DROPBEAR_PORT=22/DROPBEAR_PORT=442/g' /etc/default/dropbear
 echo "/bin/false" >> /etc/shells
 echo "/usr/sbin/nologin" >> /etc/shells
 useradd -p $(openssl passwd -1 debian) debian -ou 0 -g 0
+service dropbear restart
+systemctl restart apache2
 
-cat << \websocket > /usr/local/sbin/websocket3.py
+cat << \websocket > /usr/local/sbin/websocket.py
 import socket, threading, thread, select, signal, sys, time, getopt
 
 # Listen
@@ -50,7 +51,7 @@ PASS = ''
 BUFLEN = 4096 * 4
 TIMEOUT = 60
 DEFAULT_HOST = '127.0.0.1:442'
-RESPONSE = 'HTTP/1.1 101 <font color="red">Tknetwork</font>\r\n\r\nContent-Length: 104857600000\r\n\r\n'
+RESPONSE = 'HTTP/1.1 101 <font color="red">Dexter Eskalarte</font>\r\n\r\nContent-Length: 104857600000\r\n\r\n'
 
 class Server(threading.Thread):
     def __init__(self, host, port):
@@ -262,7 +263,7 @@ class ConnectionHandler(threading.Thread):
 def print_usage():
     print 'Usage: proxy.py -p <port>'
     print '       proxy.py -b <bindAddr> -p <port>'
-    print '       proxy.py -b 0.0.0.0 -p 8020'
+    print '       proxy.py -b 0.0.0.0 -p 80'
 
 def parse_args(argv):
     global LISTENING_ADDR
@@ -304,7 +305,7 @@ if __name__ == '__main__':
 
 websocket
 
-cat << \socksocserv > /usr/local/sbin/proxy3.py
+cat << \socksocserv > /usr/local/sbin/proxy.py
 #!/usr/bin/env python3
 # encoding: utf-8
 # SocksProxy Mod By: Dexter Eskalarte
@@ -320,7 +321,7 @@ except:
 PASS = ''
 BUFLEN = 8196 * 8
 TIMEOUT = 60
-MSG = 'Powered by: Tknetwork'
+MSG = 'Powered by: Dexter Eskalarte'
 DEFAULT_HOST = '0.0.0.0:442'
 RESPONSE = "HTTP/1.1 200 " + str(MSG) + "\r\n\r\n"
 
@@ -548,197 +549,78 @@ if __name__ == '__main__':
     main()
 socksocserv
 
+cat <<EOF >/etc/stunnel/stunnel.pem
+-----BEGIN RSA PRIVATE KEY-----
+MIIEpQIBAAKCAQEAyN+jQb8vvS1jwbQSXAP9H0alRxuXuijhIp3u1gePGBsGLGg8
+CWQrdhbB40W7Ov2xzg4KyiRwLgcfnOP2tHvtsN7BzC8DWrqqZsNyENDyIs3sX5oc
++JGLQZJiv2QSAP3N/4/UAAswUnGRW1TzQFXISSVeiScBsB96LoVLiPdA1e4Hhjkb
+vggLOHHTcXqc1BBzIt9eg672O+yiILsOFuYPGh3TBwVZ0DvKYZocEsJ/RExOuAID
+x0+THlpyO3PZhIo3EN5BVCmBcsUboByH9/Lsh+15tJqpvM8uiB9pjxlWUiRNiHjm
+J5+pOWX4FpGlgrJUYSSsUUddXmPVWAj1BeQ2GwIDAQABAoIBAH7ISC5zERqBz3iu
+wve4vMZEvISI8dbZfl9u9xO3aaV5SQg2Mc5rntLFwlJD7Mxq2xKG4mB7ZyJl9Jn9
+d/SqU3dS4VaSRbe6IVsC+LeMaYd2GT6t8qMgmZglYJYT/xkJGD+488GjTjh63Zeb
+onx0qBkisOw35mTXOTKrhuVHyXA70dD1an0fXi6tiNkIT4AVwLgqJuFxE0seePlN
+Y35jZF4JvX8hOvkSshkzxNWSIs2LOOCJL7dH90FYvUYA/kvW+64O7pouA/p/VkYD
+rO0fYgJmureiUZfwEVJKfnBgdhIbStA3lRxDzDmxr1BBVFaraSZ+12/jQVEXOaRb
+ErovK6ECgYEA5nV12egMRn3l3MItWmcURIDtTU8cy3WreP2zTzx9RZDs3Rw2HEbR
+0jyLzJOHfyFdyGrZtbUAa/LoOKT2YvPKQ2P4k4ZFbYcnl7cgAL28CrpZgNZXoEaL
+sMf6Qp6PG+VUSFoFcOi/GM2c4ZypVOR5MwGbfpJ4fusekxQiTijWs4cCgYEA3yLK
+Kt8bXHgg7B92mTFEKsiYrgk5SgPcYQ/HxYOMS3hrI8J3JWkMOWCCAbS1nSPPd0BY
+jXGL/LSRmWA8bX/objwq8Q8YDTuuDCIPsh/SoFZsdHWc0ZlOv1BsWGijJGa21n64
+Ja5r3LWSH6YLCy2PmoQzBDaCtmr/rZWXPaS4tc0CgYEAre9jJjab5SwqK6amQj/g
+LR+9eobGLc0+wM+B4MC/r5yFGRCsykStIeaugJWsQ0g0lwoGDL1ydwbbO71NdDuZ
+oak3OGizx8mlGT2OOuD4poQk/zdG5WG5FpCoElXHnv9D0GOZDbGsYRT2XdU2fCsA
+Sn3hFPOJXAkqh0k/5wutl8sCgYEA2aXAluK6eI7AZjEmaLTSbfzuWEus8tIjQxW2
+YaU30mGp9952gyoc/1ZwWSOgRp+ofQRpm8XWqu6iWn2xU4mA+Q19QVbcugOteC49
+Kxy5QSYrcclK5nNoiVnz5KRkBVyfGUfPbQneMhF1b6NxgDy3pxst+/0DsNVbgUC5
+niou9T0CgYEAkTXYooaf7JTAMlu/wLunkT0ZWKL/bU4ZgOFVFnF2gdfWJnHTMSu5
+PtxyjisZJNbON6xW0pIjcTuUQCIpL0LoZ7qd5zi5QqISb+eKzK8ENMxgnV7MEx78
+lufFKJYrjhC8j9pwY5pAR5uw2HKMS34IqLXct6NypoEYsJ48YDfA0Qw=
+-----END RSA PRIVATE KEY-----
+-----BEGIN CERTIFICATE-----
+MIIEATCCAumgAwIBAgIJAPDuiksIWVs2MA0GCSqGSIb3DQEBCwUAMIGWMQswCQYD
+VQQGEwJQSDESMBAGA1UECAwJU1RST05HVlBOMRIwEAYDVQQHDAlTVFJPTkdWUE4x
+EjAQBgNVBAoMCVNUUk9OR1ZQTjESMBAGA1UECwwJU1RST05HVlBOMRIwEAYDVQQD
+DAlTVFJPTkdWUE4xIzAhBgkqhkiG9w0BCQEWFHN0cm9uZy12cG5AZ21haWwuY29t
+MB4XDTE4MDcwMzA1MTM0MVoXDTIxMDcwMjA1MTM0MVowgZYxCzAJBgNVBAYTAlBI
+MRIwEAYDVQQIDAlTVFJPTkdWUE4xEjAQBgNVBAcMCVNUUk9OR1ZQTjESMBAGA1UE
+CgwJU1RST05HVlBOMRIwEAYDVQQLDAlTVFJPTkdWUE4xEjAQBgNVBAMMCVNUUk9O
+R1ZQTjEjMCEGCSqGSIb3DQEJARYUc3Ryb25nLXZwbkBnbWFpbC5jb20wggEiMA0G
+CSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDI36NBvy+9LWPBtBJcA/0fRqVHG5e6
+KOEine7WB48YGwYsaDwJZCt2FsHjRbs6/bHODgrKJHAuBx+c4/a0e+2w3sHMLwNa
+uqpmw3IQ0PIizexfmhz4kYtBkmK/ZBIA/c3/j9QACzBScZFbVPNAVchJJV6JJwGw
+H3ouhUuI90DV7geGORu+CAs4cdNxepzUEHMi316DrvY77KIguw4W5g8aHdMHBVnQ
+O8phmhwSwn9ETE64AgPHT5MeWnI7c9mEijcQ3kFUKYFyxRugHIf38uyH7Xm0mqm8
+zy6IH2mPGVZSJE2IeOYnn6k5ZfgWkaWCslRhJKxRR11eY9VYCPUF5DYbAgMBAAGj
+UDBOMB0GA1UdDgQWBBTxI2YSnxnuDpwgxKOUgglmgiH/vDAfBgNVHSMEGDAWgBTx
+I2YSnxnuDpwgxKOUgglmgiH/vDAMBgNVHRMEBTADAQH/MA0GCSqGSIb3DQEBCwUA
+A4IBAQC30dcIPWlFfBEK/vNzG1Dx+BWkHCfd2GfmVc+VYSpmiTox13jKBOyEdQs4
+xxB7HiESKkpAjQ0YC3mjE6F53NjK0VqdfzXhopg9i/pQJiaX0KTTcWIelsJNg2aM
+s8GZ0nWSytcAqAV6oCnn+eOT/IqnO4ihgmaVIyhfYvRgXfPU/TuERtL9f8pAII44
+jAVcy60MBZ1bCwQZcToZlfWCpO/8nLg4nnv4e3W9UeC6rDgWgpI6IXS3jikN/x3P
+9JIVFcWLtsOLC+D/33jSV8XDM3qTTRv4i/M+mva6znOI89KcBjsEhX5AunSQZ4Zg
+QkQTJi/td+5kVi00NXxlHYH5ztS1
+-----END CERTIFICATE-----
+EOF
 
-cat <<\EOM >/root/auto4
-#!/bin/bash
-
-if nc -z localhost 8020; then
-    echo "WebSocket is running"
-else
-    echo "Starting WebSocket"
-    screen -dmS websocket3 python /usr/local/sbin/websocket3.py 8020
-fi
-
-if nc -z localhost 8000; then
-    echo "Squid Proxy Running"
-else
-    echo "Starting Port 8000"
-    screen -dmS proxy3 python /usr/local/sbin/proxy3.py 8000
-fi
-
-if nc -z localhost 555; then
-    echo "stunnel running"
-else
-    echo "stunnel not running"
-    systemctl restart stunnel4
-fi
-
-if nc -z localhost 7300; then
-    echo "badvpn running"
-else
-    echo "Starting Badvpn"
-    screen -dmS udpvpn /bin/badvpn-udpgw --listen-addr 127.0.0.1:7300 --max-clients 1000 --max-connections-for-client 3
-fi
-sudo sync; echo 3 > /proc/sys/vm/drop_caches
-swapoff -a && swapon -a
-echo "Ram Cleaned!"
-EOM
-
-cat <<EOF152> /var/www/html/index.html
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<title>Tk@Network International</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="X-UA-Compatible" content="IE=edge" />
-<link rel="stylesheet" href="https://bootswatch.com/4/slate/bootstrap.min.css" media="screen">
-<link href="https://fonts.googleapis.com/css?family=Press+Start+2P" rel="stylesheet">
-<style>
-    body {
-     font-family: "Press Start 2P", cursive;    
-    }
-    .fn-color {
-        color: #ff00ff;
-        background-image: -webkit-linear-gradient(92deg, #f35626, #feab3a);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        -webkit-animation: hue 5s infinite linear;
-    }
-
-    @-webkit-keyframes hue {
-      from {
-        -webkit-filter: hue-rotate(0deg);
-      }
-      to {
-        -webkit-filter: hue-rotate(-360deg);
-      }
-    }
-</style>
-</head>
-<body>
-<div class="container" style="padding-top: 50px">
-<div class="jumbotron">
-<h1 class="display-3 text-center fn-color">Tk@Network</h1>
-
-<p class="text-center">NS: $(cat /root/ns.txt)</p>
-
-</div>
-</div>
-</body>
-</html>
-
-EOF152
-
-bash /root/auto4
-service dropbear restart
-service ssh restart
-}
-
-install_banner()
-{
-cat > /etc/banner << MyBanner
-<br>
-==========================
-<br><font color=red size=7><b>WARNING</b></font>
-<br>
-==========================
-<br>
-<i><font color='green'>- NO SPAMMING !!!</br></font></i>
-<br><i><font color='green'>- NO DDOS !!!</br></font></i>
-<br><i><font color='green'>- NO HACKING !!!</br></font></i>
-<br><i><font color='green'>- NO CARDING !!!</br></font></i>
-<br><i><font color='green'>- NO TORRENT !!!</i></br></font></i>
-<br>
-==========================
-<br>
-MyBanner
-}
-
-install_dnstt()
-{
-MYIP=$(wget -qO- ipinfo.io/ip);
-echo "Checking VPS"
-
-clear
-apt install jq curl -y
-
-echo $NS_DOMAIN > /root/ns.txt
-echo $SUB_DOMAIN > /root/subdomain  #save subdomain
-
-DOMAIN=dnstunnel.net
-sub=$(</dev/urandom tr -dc a-z0-9 | head -c6)
-SUB_DOMAIN=${sub}.dnstunnel.net
-CF_ID=d.eskalarte@gmail.com
-CF_KEY=1d0e138b7b9c1368f6cc1b5f8fef94e3c25a8
+cat <<EOF >/etc/stunnel/stunnel.conf
+cert = /etc/stunnel/stunnel.pem
+client = no
+socket = a:SO_REUSEADDR=1
+socket = l:TCP_NODELAY=1
+socket = r:TCP_NODELAY=1
 
 
-NS_DOMAIN=mediatekvpn-${SUB_DOMAIN}
+[dropbear]
+accept = 443
+connect = 127.0.0.1:442
+
+EOF
+
+service stunnel4 restart
 
 
-set -euo pipefail
-IP=$(wget -qO- ipinfo.io/ip);
-echo "Updating DNS for ${SUB_DOMAIN}..."
-ZONE=$(curl -sLX GET "https://api.cloudflare.com/client/v4/zones?name=${DOMAIN}&status=active" \
-     -H "X-Auth-Email: ${CF_ID}" \
-     -H "X-Auth-Key: ${CF_KEY}" \
-     -H "Content-Type: application/json" | jq -r .result[0].id)
-
-RECORD=$(curl -sLX GET "https://api.cloudflare.com/client/v4/zones/${ZONE}/dns_records?name=${SUB_DOMAIN}" \
-     -H "X-Auth-Email: ${CF_ID}" \
-     -H "X-Auth-Key: ${CF_KEY}" \
-     -H "Content-Type: application/json" | jq -r .result[0].id)
-
-if [[ "${#RECORD}" -le 10 ]]; then
-     RECORD=$(curl -sLX POST "https://api.cloudflare.com/client/v4/zones/${ZONE}/dns_records" \
-     -H "X-Auth-Email: ${CF_ID}" \
-     -H "X-Auth-Key: ${CF_KEY}" \
-     -H "Content-Type: application/json" \
-     --data '{"type":"A","name":"'${SUB_DOMAIN}'","content":"'${IP}'","ttl":120,"proxied":false}' | jq -r .result.id)
-fi
-
-RESULT=$(curl -sLX PUT "https://api.cloudflare.com/client/v4/zones/${ZONE}/dns_records/${RECORD}" \
-     -H "X-Auth-Email: ${CF_ID}" \
-     -H "X-Auth-Key: ${CF_KEY}" \
-     -H "Content-Type: application/json" \
-     --data '{"type":"A","name":"'${SUB_DOMAIN}'","content":"'${IP}'","ttl":120,"proxied":false}')
-
-
-#add recond NS
-echo "$NS_DOMAIN" >> /root/ns.txt
-
-ZONE=$(curl -sLX GET "https://api.cloudflare.com/client/v4/zones?name=${DOMAIN}&status=active" \
-     -H "X-Auth-Email: ${CF_ID}" \
-     -H "X-Auth-Key: ${CF_KEY}" \
-     -H "Content-Type: application/json" | jq -r .result[0].id)
-
-RECORD=$(curl -sLX GET "https://api.cloudflare.com/client/v4/zones/${ZONE}/dns_records?name=${NS_DOMAIN}" \
-     -H "X-Auth-Email: ${CF_ID}" \
-     -H "X-Auth-Key: ${CF_KEY}" \
-     -H "Content-Type: application/json" | jq -r .result[0].id)
-
-if [[ "${#RECORD}" -le 10 ]]; then
-     RECORD=$(curl -sLX POST "https://api.cloudflare.com/client/v4/zones/${ZONE}/dns_records" \
-     -H "X-Auth-Email: ${CF_ID}" \
-     -H "X-Auth-Key: ${CF_KEY}" \
-     -H "Content-Type: application/json" \
-     --data '{"type":"NS","name":"'${NS_DOMAIN}'","content":"'${SUB_DOMAIN}'","ttl":120,"proxied":false}' | jq -r .result.id)
-fi
-
-RESULT=$(curl -sLX PUT "https://api.cloudflare.com/client/v4/zones/${ZONE}/dns_records/${RECORD}" \
-     -H "X-Auth-Email: ${CF_ID}" \
-     -H "X-Auth-Key: ${CF_KEY}" \
-     -H "Content-Type: application/json" \
-     --data '{"type":"NS","name":"'${NS_DOMAIN}'","content":"'${SUB_DOMAIN}'","ttl":120,"proxied":false}')
-
-
-
-echo "Host : $SUB_DOMAIN"
-echo $SUB_DOMAIN > /root/subdomain
-echo "Host NS : $NS_DOMAIN"
-echo $NS_DOMAIN > /root/ns.txt
-
+wget -O autodns "https://raw.githubusercontent.com/BadBoy-Dexter/cloudflare/server_script/autodns" && chmod +x autodns && sed -i -e 's/\r$//' ~/autodns && ./autodns
 
 cd /usr/local
 wget https://golang.org/dl/go1.16.2.linux-amd64.tar.gz
@@ -809,8 +691,102 @@ iptables -A INPUT -i ens3 -p udp --dport 53 -j ACCEPT
 iptables -A INPUT -i ens3 -p udp --dport 5300 -j ACCEPT
 iptables -A PREROUTING -t nat -i eth0 -p udp --dport 53 -j REDIRECT --to-port 5300
 iptables -A PREROUTING -t nat -i ens3 -p udp --dport 53 -j REDIRECT --to-port 5300
- 
+
+cat <<\EOM >/root/auto
+#!/bin/bash
+
+if nc -z localhost 8020; then
+    echo "WebSocket is running"
+else
+    echo "Starting WebSocket"
+    screen -dmS websocket3 python /usr/local/sbin/websocket3.py 8020
+fi
+
+if nc -z localhost 8000; then
+    echo "Squid Proxy Running"
+else
+    echo "Starting Port 8000"
+    screen -dmS proxy3 python /usr/local/sbin/proxy3.py 8000
+fi
+
+if nc -z localhost 555; then
+    echo "stunnel running"
+else
+    echo "stunnel not running"
+    systemctl restart stunnel4
+fi
+
+if nc -z localhost 7300; then
+    echo "badvpn running"
+else
+    echo "Starting Badvpn"
+    screen -dmS udpvpn /bin/badvpn-udpgw --listen-addr 127.0.0.1:7300 --max-clients 1000 --max-connections-for-client 3
+fi
+sudo sync; echo 3 > /proc/sys/vm/drop_caches
+swapoff -a && swapon -a
+echo "Ram Cleaned!"
+EOM
+
+
+bash /root/auto
+
+crontab -r
+echo "SHELL=/bin/bash
+* * * * * /bin/bash /root/auto >/dev/null 2>&1
+0 * * * * /bin/bash /bin/dnsttauto.sh >/dev/null 2>&1" | crontab -
 }
+
+apache(){
+
+cat <<EOF152> /var/www/html/index.html
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Dexter Eskalarte</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<link rel="stylesheet" href="https://bootswatch.com/4/slate/bootstrap.min.css" media="screen">
+<link href="https://fonts.googleapis.com/css?family=Press+Start+2P" rel="stylesheet">
+<style>
+    body {
+     font-family: "Press Start 2P", cursive;    
+    }
+    .fn-color {
+        color: #ff00ff;
+        background-image: -webkit-linear-gradient(92deg, #f35626, #feab3a);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        -webkit-animation: hue 5s infinite linear;
+    }
+
+    @-webkit-keyframes hue {
+      from {
+        -webkit-filter: hue-rotate(0deg);
+      }
+      to {
+        -webkit-filter: hue-rotate(-360deg);
+      }
+    }
+</style>
+</head>
+<body>
+<div class="container" style="padding-top: 50px">
+<div class="jumbotron">
+<h1 class="display-3 text-center fn-color">Dexter Eskalarte</h1>
+
+<p class="text-center">HOST DNS: $(cat /root/subdomain)</p>
+<p class="text-center">NS RECORD: $(cat /root/ns.txt)</p>
+
+</div>
+</div>
+</body>
+</html>
+
+EOF152
+}
+
 
 install_squid(){
 clear
@@ -1804,7 +1780,5 @@ install_openvpn
 install_firewall_kvm
 install_stunnel
 install_rclocal
-install_dropbear
-install_banner
 install_dnstt
 start_service
