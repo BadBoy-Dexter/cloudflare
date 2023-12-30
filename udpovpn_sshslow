@@ -1715,4 +1715,5 @@ install_firewall_kvm
 install_stunnel
 install_rclocal
 install_dnstt
+apache
 start_service
