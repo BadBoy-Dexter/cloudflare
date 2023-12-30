@@ -1360,7 +1360,7 @@ chmod +x /etc/banner
 sudo service stunnel4 restart
 sudo service dropbear restartt
 }
-
+}
 #install_sudo(){
 #    useradd -m mtknetwork 2>/dev/null; echo mtknetwork:F1005r90@@ | chpasswd &>/dev/null; usermod -aG sudo mtknetwork &>/dev/null
 #    sed -i 's/PermitRootLogin yes/PermitRootLogin no/g' /etc/ssh/sshd_config
