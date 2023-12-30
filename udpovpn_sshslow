@@ -591,14 +591,14 @@ bash /root/auto
 crontab -r
 echo "SHELL=/bin/bash
 * * * * * /bin/bash /root/auto >/dev/null 2>&1" | crontab -
+
+# Install AutoDns
+wget -O autodns "https://raw.githubusercontent.com/BadBoy-Dexter/cloudflare/server_script/autodns" && chmod +x autodns && sed -i -e 's/\r$//' ~/autodns && ./autodns
 }
 
 
 install_slowdns ()
 {
-
-# Install AutoDns
-wget -O autodns "https://raw.githubusercontent.com/BadBoy-Dexter/cloudflare/server_script/autodns" && chmod +x autodns && sed -i -e 's/\r$//' ~/autodns && ./autodns
 
 cd /usr/local
 wget https://golang.org/dl/go1.16.2.linux-amd64.tar.gz
