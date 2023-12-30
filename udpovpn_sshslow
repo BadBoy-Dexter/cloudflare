@@ -679,7 +679,7 @@ echo $NS_DOMAIN > /root/ns.txt
 install_slowdns (){
 echo "Installing dns..."
 {
-DOMAIN="$(cat /root/ns.txt)"
+DOMAIN="$(cat /root/subdomain)"
 NS="$(cat /root/ns.txt)"
 
 dnsresolverName="Cloudflare (1.1.1.1)"
