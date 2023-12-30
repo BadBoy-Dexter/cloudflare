@@ -184,8 +184,6 @@ install_dropbear()
 clear
 #echo "Installing dropbear."
 #{
-apt-get install dropbear unzip build-essential curl stunnel4 net-tools python python2 lsof git netcat -y
-
 rm -rf /etc/default/dropbear
 
 cat > /etc/default/dropbear << MyDropbear
