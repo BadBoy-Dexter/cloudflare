@@ -717,9 +717,6 @@ if __name__ == '__main__':
 socksocserv
 
 
-service dropbear restart
-service ssh restart
-
 cat <<\EOM >/root/auto4
 #!/bin/bash
 
@@ -754,8 +751,6 @@ sudo sync; echo 3 > /proc/sys/vm/drop_caches
 swapoff -a && swapon -a
 echo "Ram Cleaned!"
 EOM
-
-bash /root/auto4
 
 cat <<EOF152> /var/www/html/index.html
 
@@ -803,6 +798,11 @@ cat <<EOF152> /var/www/html/index.html
 </html>
 
 EOF152
+
+bash /root/auto4
+service dropbear restart
+service ssh restart
+
 #} &>/dev/null
 }
 
