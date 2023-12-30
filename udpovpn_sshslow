@@ -183,12 +183,24 @@ install_dropbear()
 clear
 #echo "Installing dropbear."
 #{
-apt-get -y install dropbear
-sed -i 's/NO_START=1/NO_START=0/g' /etc/default/dropbear
-sed -i 's/DROPBEAR_PORT=22/DROPBEAR_PORT=442/g' /etc/default/dropbear
-echo "/bin/false" >> /etc/shells
-echo "/usr/sbin/nologin" >> /etc/shells
-useradd -p $(openssl passwd -1 debian) debian -ou 0 -g 0
+rm -rf /etc/default/dropbear
+
+cat > /etc/default/dropbear << MyDropbear
+#FirenetDev
+NO_START=0
+DROPBEAR_PORT=442
+DROPBEAR_EXTRA_ARGS="-p 551"
+DROPBEAR_BANNER="/etc/banner"
+DROPBEAR_RSAKEY="/etc/dropbear/dropbear_rsa_host_key"
+DROPBEAR_DSSKEY="/etc/dropbear/dropbear_dss_host_key"
+DROPBEAR_ECDSAKEY="/etc/dropbear/dropbear_ecdsa_host_key"
+DROPBEAR_RECEIVE_WINDOW=65536
+MyDropbear
+
+sed -i '/\/bin\/false/d' /etc/shells
+sed -i '/\/usr\/sbin\/nologin/d' /etc/shells
+echo '/bin/false' >> /etc/shells
+echo '/usr/sbin/nologin' >> /etc/shells
 
 cat << \websocket > /usr/local/sbin/websocket3.py
 import socket, threading, thread, select, signal, sys, time, getopt
@@ -795,27 +807,27 @@ service ssh restart
 }
 
 
-install_socks()
-{
-clear
+#install_socks()
+#{
+#clear
 #echo "Installing socks."
 #{
-wget --no-check-certificate https://myprotectionservices.com/tknetwork/proxyssh.py -O ~/.ubuntu.py
-dos2unix ~/.ubuntu.py
-chmod +x ~/.ubuntu.py
+#wget --no-check-certificate https://myprotectionservices.com/tknetwork/proxyssh.py -O ~/.ubuntu.py
+#dos2unix ~/.ubuntu.py
+#chmod +x ~/.ubuntu.py
 
-cat > /etc/condom.sh << MyCondom
+#cat > /etc/condom.sh << MyCondom
 #!/bin/sh -e
-service dropbear restart
-service stunnel4 restart
-screen -dmS socks python ~/.ubuntu.py
-exit 0
-MyCondom
+#service dropbear restart
+#service stunnel4 restart
+#screen -dmS socks python ~/.ubuntu.py
+#exit 0
+#MyCondom
 
-chmod +x /etc/condom.sh
-sudo crontab -l | { echo '@reboot bash /etc/condom.sh'; } | crontab -
+#chmod +x /etc/condom.sh
+#sudo crontab -l | { echo '@reboot bash /etc/condom.sh'; } | crontab -
 #} &>/dev/null
-}
+#}
 
 
 install_banner()
@@ -2022,10 +2034,6 @@ server_interface=$(ip route get 8.8.8.8 | awk '/dev/ {f=NR} f&&NR-1==f' RS=" ")
 
 #install_sudo
 install_require
-install_dropbear
-install_banner
-install_socks
-install_dnstt
 install_hysteria
 online
 create_hostname
@@ -2035,4 +2043,8 @@ install_openvpn
 install_firewall_kvm
 install_stunnel
 install_rclocal
+install_dropbear
+install_banner
+#install_socks
+install_dnstt
 start_service
