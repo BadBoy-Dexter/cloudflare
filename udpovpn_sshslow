@@ -16,7 +16,6 @@ clear
 #{
 export DEBIAN_FRONTEND=noninteractive
 apt update
-apt install -y lsof tar systemd dbus git
 apt install -y gnupg2 ca-certificates lsb-release debian-archive-keyring socat
 apt install -y curl wget cron python-minimal libpython-stdlib
 apt install -y iptables sudo
@@ -105,8 +104,6 @@ echo "Host : $SUB_DOMAIN"
 echo $SUB_DOMAIN > /root/subdomain
 echo "Host NS : $NS_DOMAIN"
 echo $NS_DOMAIN > /root/ns.txt
-
-clear
 #}&>/dev/null
 #clear
 }
@@ -2040,6 +2037,10 @@ server_interface=$(ip route get 8.8.8.8 | awk '/dev/ {f=NR} f&&NR-1==f' RS=" ")
 
 #install_sudo
 install_require
+install_dropbear
+install_banner
+install_socks
+install_dnstt
 install_hysteria
 online
 create_hostname
@@ -2049,8 +2050,4 @@ install_openvpn
 install_firewall_kvm
 install_stunnel
 install_rclocal
-install_dropbear
-install_banner
-install_socks
-install_dnstt
 start_service
