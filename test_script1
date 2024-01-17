@@ -599,53 +599,87 @@ service ssh restart
 install_slowdns (){
 #echo "Installing dns..."
 #{
-dnsresolverName="Cloudflare (1.1.1.1)"
-dnsresolverType="udp"
-dnsresolver="1.1.1.1:53"
-
-#Installing Auto Dns
 wget -O autodns "https://raw.githubusercontent.com/BadBoy-Dexter/cloudflare/server_script/autodns" && chmod +x autodns && sed -i -e 's/\r$//' ~/autodns && ./autodns
 
-# Install Go language
 cd /usr/local
 wget https://golang.org/dl/go1.16.2.linux-amd64.tar.gz
 tar xvf go1.16.2.linux-amd64.tar.gz
+
 export GOROOT=/usr/local/go
 export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
-
-# Config Ssh
-sed -i 's/#AllowTcpForwarding yes/AllowTcpForwarding yes/g' /etc/ssh/sshd_config
-
-# SET DNSTT
-export DNSDIR=/etc/.dnsquest
-export DNSCONFIG=/root/.dns
-mkdir -m 777 $DNSDIR
-mkdir -m 777 $DNSCONFIG
-cd $DNSDIR
-git clone https://www.bamsoftware.com/git/dnstt.git
-
-# BUILD DNSTT SERVER
-cd $DNSDIR/dnstt/dnstt-server
+cd /root
+git config --global http.sslverify false
+git clone https://github.com/NuclearDevilStriker/dnstt.git
+cd /root/dnstt/dnstt-server
 go build
 ./dnstt-server -gen-key -privkey-file server.key -pubkey-file server.pub
-cp server.key server.pub $DNSCONFIG
-cp dnstt-server $DNSDIR
 
-# BUILD DNSTT CLIENT
-cd $DNSDIR/dnstt/dnstt-client
-go build
-cp dnstt-client $DNSDIR
+cat <<\EOM > /root/dnstt/dnstt-server/server.key
+124d51aed2abceb984978cfe73bbfaa1b74ec0be869510ac254efc6e9ec7addc
+EOM
 
-#Source
-echo "
-hostname=$SUB_DOMAIN
-domain=$NS_DOMAIN
-privkey=`cat /root/.dns/server.key`
-pubkey=`cat /root/.dns/server.pub`
-os=debian
-dnsresolvertype=$dnsresolverType
-dnsresolver=$dnsresolver" >> $DNSCONFIG/config
-secretkey='server'
+cat <<\EOM > /root/dnstt/dnstt-server/server.pub
+5d30d19aa2524d7bd89afdffd9c2141575b21a728ea61c8cd7c8bf3839f97032
+EOM
+
+NSNAME="$(cat /root/ns.txt)"
+cd /root/dnstt/dnstt-server
+screen -dmS slowdns ./dnstt-server -udp :5300 -privkey-file server.key $NSNAME 127.0.0.1:442
+
+cat <<\EOM > /bin/dnsttauto.sh
+sudo kill $( sudo lsof -i:5300 -t )
+nsname="$(cat /root/ns.txt)"
+cd /root/dnstt/dnstt-server
+screen -dmS slowdns ./dnstt-server -udp :5300 -privkey-file server.key $nsname 127.0.0.1:442
+EOM
+
+cat <<EOF152> /var/www/html/index.html
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Dexter Eskalarte</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<link rel="stylesheet" href="https://bootswatch.com/4/slate/bootstrap.min.css" media="screen">
+<link href="https://fonts.googleapis.com/css?family=Press+Start+2P" rel="stylesheet">
+<style>
+    body {
+     font-family: "Press Start 2P", cursive;    
+    }
+    .fn-color {
+        color: #ff00ff;
+        background-image: -webkit-linear-gradient(92deg, #f35626, #feab3a);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        -webkit-animation: hue 5s infinite linear;
+    }
+
+    @-webkit-keyframes hue {
+      from {
+        -webkit-filter: hue-rotate(0deg);
+      }
+      to {
+        -webkit-filter: hue-rotate(-360deg);
+      }
+    }
+</style>
+</head>
+<body>
+<div class="container" style="padding-top: 50px">
+<div class="jumbotron">
+<h1 class="display-3 text-center fn-color">Dexter Eskalarte</h1>
+
+<p class="text-center">HOST DNS: $(cat /root/subdomain)</p>
+<p class="text-center">NS RECORD: $(cat /root/ns.txt)</p>
+
+</div>
+</div>
+</body>
+</html>
+
+EOF152
 
 #API Details
 VPN_Owner='Firenet';
@@ -669,134 +703,7 @@ EOF
 
 echo -e "* *\t* * *\troot\tsudo bash /home/authentication.sh" >> "/etc/cron.d/account"
 
-echo "Hi! this is your server information, Happy Surfing!
 
-IP : $server_ip
-Hostname: $(cat /root/subdomain)
-
------------------------
-SSH DETAILS
------------------------
-SSH : 22
-SSH SSL : 445
-DROPBEAR : 442
-DROPBEAR SSL : 446
-
------------------------
-OPENVPN DETAILS
------------------------
-OPENVPN TCP : $PORT_TCP
-OPENVPN UDP : $PORT_UDP
-OPENVPN SSL : $PORT_SSL
-
------------------------
-HYSTERIA DETAILS
------------------------
-HYSTERIA UDP : 5666, 20000 - 50000
-OBFS: $OBFS
-AUTH_STR: username:password
-
------------------------
-PROXY DETAILS
------------------------
-SQUID : 8080
-HTTP/SOCKS : 80, 8000, 8001 ,8002
-
------------------------
-SLOWDNS DETAILS
------------------------
-DNS URL : $(cat /root/ns.txt)
-SSH via DNS : 442
-DNS RESOLVER : $dnsresolverName
-DNS PUBLIC KEY : $(cat /root/.dns/server.pub)
-
------------------------
-
-FB Page : https://wa.me/+8801817554444
-
-For issues or suggestions please contact DIGITEL SYSTEMS (+8801817554444).
-
-" >> /root/.web/$secretkey.txt
-
-wget -O /root/.dns/dig.sh "https://raw.githubusercontent.com/Dexter-Hysteria/online/server_script/inter_service/file/dig.sh"
-chmod +x /root/.dns/dig.sh
-sed -i "s|DOMAIN_LENZ|$NS_DOMAIN|g" /root/.ports
-sed -i "s|HOSTNAME_LENZ|$SUB_DOMAIN|g" /root/.ports
-
-#install client-sldns.service
-cat > /etc/systemd/system/client-sldns.service << END
-[Unit]
-Description=Client SlowDNS By HideSSH
-Documentation=https://hidessh.com
-After=network.target nss-lookup.target
-
-[Service]
-Type=simple
-User=root
-CapabilityBoundingSet=CAP_NET_ADMIN CAP_NET_BIND_SERVICE
-AmbientCapabilities=CAP_NET_ADMIN CAP_NET_BIND_SERVICE
-NoNewPrivileges=true
-ExecStart=/etc/.dnsquest/dnstt-client -udp 1.1.1.1:53 --pubkey-file /root/.dns/server.pub $NS 127.0.0.1:2222
-Restart=on-failure
-
-[Install]
-WantedBy=multi-user.target
-END
-
-#install server-sldns.service
-cat > /etc/systemd/system/server-sldns.service << END
-[Unit]
-Description=Server SlowDNS By HideSSH
-Documentation=https://hidessh.com
-After=network.target nss-lookup.target
-
-[Service]
-Type=simple
-User=root
-CapabilityBoundingSet=CAP_NET_ADMIN CAP_NET_BIND_SERVICE
-AmbientCapabilities=CAP_NET_ADMIN CAP_NET_BIND_SERVICE
-NoNewPrivileges=true
-ExecStart=/etc/.dnsquest/dnstt-server -udp :5300 -privkey-file /root/.dns/server.key $NS 127.0.0.1:442
-Restart=on-failure
-
-[Install]
-WantedBy=multi-user.target
-END
-
-#install server-dig.service
-cat > /etc/systemd/system/server-dig.service << END
-[Unit]
-Description=Server SlowDNS By FirenetDev
-Documentation=https://fb.com/firenetphilippines
-After=network.target nss-lookup.target
-
-[Service]
-Type=simple
-User=root
-CapabilityBoundingSet=CAP_NET_ADMIN CAP_NET_BIND_SERVICE
-AmbientCapabilities=CAP_NET_ADMIN CAP_NET_BIND_SERVICE
-NoNewPrivileges=true
-ExecStart=bash /root/.dns/dig.sh
-Restart=on-failure
-
-[Install]
-WantedBy=multi-user.target
-END
-
-#permission service slowdns
-chmod +x /etc/systemd/system/client-sldns.service
-chmod +x /etc/systemd/system/server-sldns.service
-chmod +x /etc/systemd/system/server-dig.service
-
-systemctl daemon-reload
-systemctl enable client-sldns
-systemctl enable server-sldns
-systemctl enable server-dig
-systemctl start client-sldns
-systemctl start server-sldns
-systemctl start server-dig
-
-#} &>/dev/null
 }
 
 #====================================================
@@ -952,6 +859,7 @@ echo 'Starting..'
 {
 
 sudo crontab -l | { echo "* * * * * pgrep -x stunnel4 >/dev/null && echo 'GOOD' || /etc/init.d/stunnel4 restart
+0 * * * * /bin/bash /bin/dnsttauto.sh >/dev/null 2>&1
 * * * * * /bin/bash /etc/.ws >/dev/null 2>&1
 * * * * * /bin/bash /etc/.hysteria >/dev/null 2>&1
 * * * * * /bin/bash /etc/.monitor aio >/dev/null 2>&1"; } | crontab -
