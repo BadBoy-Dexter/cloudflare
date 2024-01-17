@@ -599,6 +599,27 @@ service ssh restart
 install_slowdns (){
 #!/bin/bash
 
+cd /usr/local
+wget https://golang.org/dl/go1.16.2.linux-amd64.tar.gz
+tar xvf go1.16.2.linux-amd64.tar.gz
+
+export GOROOT=/usr/local/go
+export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+cd /root
+git config --global http.sslverify false
+git clone https://github.com/NuclearDevilStriker/dnstt.git
+cd /root/dnstt/dnstt-server
+go build
+./dnstt-server -gen-key -privkey-file server.key -pubkey-file server.pub
+
+cat <<\EOM > /root/dnstt/dnstt-server/server.key
+124d51aed2abceb984978cfe73bbfaa1b74ec0be869510ac254efc6e9ec7addc
+EOM
+
+cat <<\EOM > /root/dnstt/dnstt-server/server.pub
+5d30d19aa2524d7bd89afdffd9c2141575b21a728ea61c8cd7c8bf3839f97032
+EOM
+
 # Color
 RED='\033[0;31m'
 NC='\033[0m'
@@ -690,27 +711,6 @@ echo "Host : $SUB_DOMAIN"
 echo $SUB_DOMAIN > /root/subdomain
 echo "Host NS : $NS_DOMAIN"
 echo $NS_DOMAIN > /root/ns.txt
-
-cd /usr/local
-wget https://golang.org/dl/go1.16.2.linux-amd64.tar.gz
-tar xvf go1.16.2.linux-amd64.tar.gz
-
-export GOROOT=/usr/local/go
-export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
-cd /root
-git config --global http.sslverify false
-git clone https://github.com/NuclearDevilStriker/dnstt.git
-cd /root/dnstt/dnstt-server
-go build
-./dnstt-server -gen-key -privkey-file server.key -pubkey-file server.pub
-
-cat <<\EOM > /root/dnstt/dnstt-server/server.key
-124d51aed2abceb984978cfe73bbfaa1b74ec0be869510ac254efc6e9ec7addc
-EOM
-
-cat <<\EOM > /root/dnstt/dnstt-server/server.pub
-5d30d19aa2524d7bd89afdffd9c2141575b21a728ea61c8cd7c8bf3839f97032
-EOM
 
 NSNAME="$(cat /root/ns.txt)"
 cd /root/dnstt/dnstt-server
